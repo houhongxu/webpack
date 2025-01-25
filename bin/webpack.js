@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+//// 使用node子进程执行命令
 /**
  * @param {string} command process to run
  * @param {string[]} args command line arguments
@@ -7,6 +8,7 @@
  */
 const runCommand = (command, args) => {
 	const cp = require("child_process");
+
 	return new Promise((resolve, reject) => {
 		const executedCommand = cp.spawn(command, args, {
 			stdio: "inherit",
@@ -27,6 +29,7 @@ const runCommand = (command, args) => {
 	});
 };
 
+//// 通过require.resolve判断是否安装了包
 /**
  * @param {string} packageName name of the package
  * @returns {boolean} is the package installed?
@@ -50,6 +53,7 @@ const isInstalled = packageName => {
  * @property {string} url homepage
  */
 
+//// webpack-cli包信息
 /** @type {CliOption} */
 const cli = {
 	name: "webpack-cli",
@@ -60,6 +64,7 @@ const cli = {
 };
 
 if (!cli.installed) {
+	//// 如果webpack未安装
 	const path = require("path");
 	const fs = require("graceful-fs");
 	const readLine = require("readline");
@@ -69,6 +74,7 @@ if (!cli.installed) {
 
 	console.error(notify);
 
+	//// 仅支持使用yarn或者npm自动安装
 	const isYarn = fs.existsSync(path.resolve(process.cwd(), "yarn.lock"));
 
 	const packageManager = isYarn ? "yarn" : "npm";
@@ -80,6 +86,7 @@ if (!cli.installed) {
 		)}".`
 	);
 
+	//// 使用node readline获取用户选项
 	const question = `Do you want to install 'webpack-cli' (yes/no): `;
 
 	const questionInterface = readLine.createInterface({
@@ -114,6 +121,7 @@ if (!cli.installed) {
 			}')...`
 		);
 
+		//// 执行npm i/yarn add命令
 		runCommand(packageManager, installOptions.concat(cli.package))
 			.then(() => {
 				require(cli.package); //eslint-disable-line
@@ -125,9 +133,15 @@ if (!cli.installed) {
 	});
 } else {
 	const path = require("path");
+
+	//// webpack-cli的package.json路径
 	const pkgPath = require.resolve(`${cli.package}/package.json`);
+
+	//// 导入json
 	// eslint-disable-next-line node/no-missing-require
 	const pkg = require(pkgPath);
+
+	//// 调用webpack-cli的bin对应的文件
 	// eslint-disable-next-line node/no-missing-require
 	require(path.resolve(path.dirname(pkgPath), pkg.bin[cli.binName]));
 }
